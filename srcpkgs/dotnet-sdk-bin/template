@@ -1,0 +1,38 @@
+pkgname=dotnet-sdk-bin
+version=3.1.102
+revision=1
+archs="x86_64"
+wrksrc="${pkgname}-${version}"
+create_wrksrc=yes
+short_desc="Provides the .NET SDK components, precompiled binaries"
+maintainer="Corentin Brunel <corentin.brunel@outlook.com>"
+license="MIT"
+homepage="https://dotnet.microsoft.com"
+nopie=yes
+nostrip=yes
+noshlibprovides=yes
+
+case "${XBPS_TARGET_MACHINE}" in
+    x86_64)
+        _arch="x64"
+        _path="57e63f03-ebdf-4c22-96ff-2b85dc70cf7f/988576869e82a80f4a97ca5a733a5295"
+        distfiles="https://download.visualstudio.microsoft.com/download/pr/${_path}/dotnet-sdk-${version}-linux-${_arch}.tar.gz"
+        checksum="e03ceeb5beaf7c228bd8dcbf7712cf12f5ccbfcd6d426afff78bfbd4524ff558"
+esac
+
+_target='usr/lib/dotnet'
+
+do_install() {
+    vmkdir usr/bin
+    ln -sf "/${_target}/dotnet" "${DESTDIR}/usr/bin/dotnet"
+    vmkdir "${_target}"
+    vcopy dotnet "${_target}"
+    vcopy host "${_target}"
+    vcopy shared "${_target}"
+    vcopy sdk "${_target}"
+    vcopy packs "${_target}"
+    vcopy templates "${_target}"
+    vlicense LICENSE.txt
+}
+
+# vim:ft=sh:tabstop=4:shiftwidth=4:expandtab:smartindent
