@@ -9,8 +9,6 @@ maintainer="Corentin Brunel <corentin.brunel@outlook.com>"
 license="MIT"
 homepage="https://dotnet.microsoft.com"
 nopie=yes
-nostrip=yes
-noshlibprovides=yes
 
 case "${XBPS_TARGET_MACHINE}" in
     x86_64)
@@ -24,14 +22,19 @@ _target='usr/lib/dotnet'
 
 do_install() {
     vmkdir usr/bin
-    ln -sf "/${_target}/dotnet" "${DESTDIR}/usr/bin/dotnet"
     vmkdir "${_target}"
+    vmkdir "etc/dotnet"
+    echo "/${_target}" > "${DESTDIR}/etc/dotnet/install_location"
+
+    ln -sf "/${_target}/dotnet" "${DESTDIR}/usr/bin/dotnet"
+
     vcopy dotnet "${_target}"
     vcopy host "${_target}"
     vcopy shared "${_target}"
     vcopy sdk "${_target}"
     vcopy packs "${_target}"
     vcopy templates "${_target}"
+
     vlicense LICENSE.txt
 }
 
