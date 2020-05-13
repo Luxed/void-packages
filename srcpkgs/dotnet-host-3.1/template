@@ -1,0 +1,128 @@
+pkgname=dotnet-host-3.1
+version=3.1.102
+revision=1
+archs="x86_64"
+wrksrc="${pkgname}-${version}"
+create_wrksrc=yes
+short_desc="Dotnet host"
+maintainer="Corentin Brunel <corentin.brunel@outlook.com>"
+license="MIT"
+homepage="https://dotnet.microsoft.com"
+nopie=yes
+
+case "${XBPS_TARGET_MACHINE}" in
+    x86_64)
+        _arch="x64"
+        _path="57e63f03-ebdf-4c22-96ff-2b85dc70cf7f/988576869e82a80f4a97ca5a733a5295"
+        distfiles="https://download.visualstudio.microsoft.com/download/pr/${_path}/dotnet-sdk-${version}-linux-${_arch}.tar.gz"
+        checksum="e03ceeb5beaf7c228bd8dcbf7712cf12f5ccbfcd6d426afff78bfbd4524ff558"
+esac
+
+_target='usr/lib/dotnet'
+
+do_install() {
+    vmkdir usr/bin
+    vmkdir "${_target}"
+    vmkdir "etc/dotnet"
+    # 16
+    echo "/${_target}" > "${DESTDIR}/etc/dotnet/install_location"
+
+    # 10
+    ln -sf "/${_target}/dotnet" "${DESTDIR}/usr/bin/dotnet"
+    # 1
+    vcopy dotnet "${_target}"
+
+    # 8
+    vcopy ThirdPartyNotices.txt "${_target}"
+    vlicense LICENSE.txt
+
+    # 9 (man pages) missing
+}
+
+dotnet-hostfxr-3.1_package() {
+    short_desc="Dotnet host fxr"
+    depends="${sourcepkg}>=${version}_${revision}"
+
+    pkg_install() {
+        vmkdir "${_target}"
+
+        # 2
+        vcopy host "${_target}"
+    }
+}
+
+dotnet-runtime-3.1_package() {
+    short_desc="Dotnet runtime 3.1"
+    depends="dotnet-hostfxr-3.1>=${version}_${revision}"
+
+    pkg_install() {
+        vmkdir "${_target}"
+        vmkdir "${_target}/shared"
+
+        # 5
+        vcopy "shared/Microsoft.NETCore.App" "${_target}/shared"
+    }
+}
+
+aspnetcore-runtime-3.1_package() {
+    short_desc="Aspnet core runtime 3.1"
+    depends="dotnet-runtime-3.1>=${version}_${revision}"
+
+    pkg_install() {
+        vmkdir "${_target}"
+        vmkdir "${_target}/shared"
+
+        # 6
+        vcopy "shared/Microsoft.AspNetCore.App" "${_target}/shared"
+        # doesn't exist with sdk
+        #vcopy "shared/Microsoft.AspNetCore.All" "${_target}/shared"
+    }
+}
+
+aspnetcore-targeting-pack-3.1_package() {
+    short_desc="Aspnet core targeting pack"
+
+    pkg_install() {
+        vmkdir "${_target}/packs"
+
+        # 11
+        vcopy "packs/Microsoft.AspNetCore.App.Ref" "${_target}/packs"
+    }
+}
+
+dotnet-targeting-pack-3.1_package() {
+    short_desc="Dotnet targeting pack"
+
+    pkg_install() {
+        vmkdir "${_target}/packs"
+
+        # 12
+        vcopy "packs/Microsoft.NETCore.App.Ref" "${_target}/packs"
+    }
+}
+
+# TODO: version is different in documentation
+netstandard-targeting-pack-2.1_package() {
+    short_desc="Netstandard targeting pack"
+
+    pkg_install() {
+        vmkdir "${_target}/packs"
+
+        # 15
+        vcopy "packs/NETStandard.Library.Ref" "${_target}/packs"
+    }
+}
+
+dotnet-sdk-3.1_package() {
+    short_desc="Dotnet sdk 3.1"
+    depends="aspnetcore-runtime-3.1>=${version}_${revision} dotnet-targeting-pack-3.1>=${version}_${revision} aspnetcore-targeting-pack-3.1>=${version}_${revision} netstandard-targeting-pack-2.1>=${version}_${revision}"
+
+    pkg_install() {
+        vmkdir "${_target}"
+
+        # 3, 4
+        vcopy sdk "${_target}"
+    }
+}
+
+# vim:ft=sh:tabstop=4:shiftwidth=4:expandtab:smartindent
